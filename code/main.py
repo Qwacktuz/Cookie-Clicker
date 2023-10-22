@@ -1,46 +1,57 @@
 from settings import *
-from math import sin
+from cookie import Cookie
 
-pygame.init()
-new_font = pygame.font.Font(None, 50)
-screen = pygame.display.set_mode((1600, 900))
-pygame.display.set_caption('Cookie Clicker')
-clock = pygame.time.Clock()
 
-bg_surface = pygame.image.load(join('graphics', 'cookie-clicker-background.jpg')).convert()
-cookie_surface = pygame.image.load(join('graphics', 'cookie.png')).convert_alpha()
-cookie_rect = cookie_surface.get_rect(center = (800, 500))
+class Main:
+    def __init__(self):
+        pygame.init()
+        self.screen = pygame.display.set_mode((1600, 900))
+        pygame.display.set_caption("Cookie Clicker")
 
-cookies_clicked = 0
-clicked_cookie= False
+        self.new_font = pygame.font.Font(None, 50)
+        self.clock = pygame.time.Clock()
 
-def draw_cookie():
-    scale = 1.25 + sin(pygame.time.get_ticks() / 800) / 10
-    scaled_surf = pygame.transform.smoothscale_by(cookie_surface, scale)
-    scaled_rect = scaled_surf.get_rect(center = (800, 500))
-    screen.blit(scaled_surf, scaled_rect)
+        self.bg_surface = pygame.image.load(
+            join("graphics", "cookie-clicker-background.jpg")
+        ).convert()
 
-# event loop
-while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            exit()
+        self.cookie = Cookie()
+        self.clicked_cookie = False
 
-    text_surface = new_font.render(f'You have currently clicked {cookies_clicked} cookies', True, 'white')
+    def check_collision(self):
+        mouse_pos = pygame.mouse.get_pos()
+        if self.cookie.cookie_rect.collidepoint(mouse_pos):
+            if pygame.mouse.get_pressed()[0]:
+                self.clicked_cookie = True
+            else:
+                if self.clicked_cookie:
+                    self.cookie.cookies_clicked += 1
+                    self.clicked_cookie = False
 
-    screen.blit(bg_surface,(0,0))
-    screen.blit(text_surface,(500,50))
-    draw_cookie()
+    # event loop
+    def run(self):
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
 
-    mouse_pos = pygame.mouse.get_pos()
-    if cookie_rect.collidepoint(mouse_pos):
-        if pygame.mouse.get_pressed()[0]:
-            clicked_cookie = True
-        else:
-            if clicked_cookie:
-                cookies_clicked += 1
-                clicked_cookie = False
+            text_surface = self.new_font.render(
+                f"You have currently clicked {self.cookie.cookies_clicked} cookies",
+                True,
+                "white",
+            )
 
-    pygame.display.update()
-    clock.tick(60)
+            self.screen.blit(self.bg_surface, (0, 0))
+            self.screen.blit(text_surface, (500, 50))
+
+            self.cookie.draw()
+            self.check_collision()
+
+            pygame.display.update()
+            self.clock.tick(60)
+
+
+if __name__ == "__main__":
+    main = Main()
+    main.run()
